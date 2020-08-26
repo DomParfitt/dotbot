@@ -35,6 +35,7 @@ class Shell(dotbot.Plugin):
                 stdout = item.get('stdout', stdout)
                 stderr = item.get('stderr', stderr)
                 quiet = item.get('quiet', quiet)
+                cond_cmd = item.get('if', None)
             elif isinstance(item, list):
                 cmd = item[0]
                 msg = item[1] if len(item) > 1 else None
@@ -47,6 +48,19 @@ class Shell(dotbot.Plugin):
                 self._log.lowinfo('%s' % msg)
             else:
                 self._log.lowinfo('%s [%s]' % (msg, cmd))
+            
+            if cond_cmd is not None:
+                cond = dotbot.util.shell_command(
+                    cond_cmd,
+                    cwd=self._context.base_directory(),
+                    enable_stdin=stdin,
+                    enable_stdout=stdout,
+                    enable_stderr=stderr,
+                )
+                
+                if cond != 0:
+                    continue
+
             ret = dotbot.util.shell_command(
                 cmd,
                 cwd=self._context.base_directory(),
